@@ -6,7 +6,9 @@ Welcome to **Mercury AIQuest**, a multi-service application built to demonstrate
 
 https://github.com/user-attachments/assets/de732828-c699-498a-ba4d-d691cf34b42d
 
+
 https://github.com/user-attachments/assets/9314b8d6-9871-4dd9-87aa-3ef49a8738e9
+
 ---
 
 🚀 Check out the **project showcase video**: [https://www.youtube.com/watch?v=l1pXpls1Vro](https://www.youtube.com/watch?v=l1pXpls1Vro)  
