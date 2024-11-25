@@ -23,7 +23,7 @@ Handles all the core CRUD operations for the application, serving as the backbon
 ### 3. [Backend: Mercury-Email-Service](https://github.com/SidTheKid-dotcom/Mercury-Email-Service)
 A microservice dedicated to email-based functionalities such as notifications and updates.
 
-### 4. [Backend: Mercury-Email-Service](https://github.com/SidTheKid-dotcom/AI-RAG-Service)
+### 4. [Backend: AI-RAG-Service](https://github.com/SidTheKid-dotcom/AI-RAG-Service)
 A microservice dedicated to chunking files, storing in vector DB and refining responses using AI, for provinding the feature to talk with files and repos
 
 ---
