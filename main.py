@@ -1,3 +1,28 @@
+from fastapi import FastAPI, Request, HTTPException
+import requests
+import google.generativeai as genai
+from fastapi.middleware.cors import CORSMiddleware
+import astrapy
+from astrapy.exceptions import CollectionNotFoundException
+
+
+app = FastAPI()
+origins = [
+    "http://localhost",  # Allow localhost (can be specific port)
+    "http://localhost:3000",  # For example, a frontend running on port 3000
+    "https://example.com",  # A domain you want to allow
+    "*",  # Allows all origins (not recommended for production)
+]
+
+
+# Add CORSMiddleware to the app
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # List of allowed origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 import os
 import google.generativeai as genai
