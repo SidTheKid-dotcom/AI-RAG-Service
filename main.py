@@ -213,3 +213,117 @@ def delete_collection_if_exists(database, collection_name):
         print(f"An error occurred while trying to delete collection '{collection_name}': {str(e)}")
         return False
 
+
+ASTRA_DB_APPLICATION_TOKEN = "-----------------------------------"
+ASTRA_DB_API_ENDPOINT = "-----------------------------------"
+
+
+
+# Initialize the client
+my_client = astrapy.DataAPIClient()
+my_database = my_client.get_database(
+    ASTRA_DB_API_ENDPOINT,
+    token=ASTRA_DB_APPLICATION_TOKEN,
+)
+
+
+collection_name = "dreams" 
+success = delete_collection_if_exists(my_database, collection_name)
+
+path=""
+
+def fetch_and_chunk(api_url, repo_url):
+    global path
+    """
+    Recursively fetches files and directories from a GitHub repository,
+    splits file content into chunks, and prepares it for indexing.
+
+    Args:
+        api_url (str): GitHub API URL of the directory to fetch.
+        repo_url (str): The base URL of the repository.
+
+    Returns:
+        list: A list of documents, each representing a chunk with metadata.
+    """
+    GITHUB_TOKEN = "-----------------------------------"
+    HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "User-Agent": "nilaytayade"}
+    documents = []
+    code_extensions = {'.py', '.js', '.java', '.cpp', '.c', '.cs', '.go', '.rb', '.php', '.html', '.css', '.ts', '.json', '.xml', '.yml', '.yaml', '.sh', '.bat','md','txt','ipynb'}
+
+    try:
+        response = requests.get(api_url, headers=HEADERS)
+        print("First request done")
+        response.raise_for_status()
+        items = response.json()
+
+
+        print("Index done")
+        print("Fetching and chunking files...")
+
+        for item in items:
+            # Skip ignored paths
+            if any(ignore_path in item['path'] for ignore_path in {'node_modules', 'packages', 'db', 'ml models','.json'}):
+                print(f"Ignoring directory: {item['path']}")
+                continue
+
+            if item['type'] == 'file':
+                # Process only code file extensions
+                if not any(item['path'].endswith(ext) for ext in code_extensions):
+                    print(f"Ignoring non-code file: {item['path']}")
+                    continue
+
+                # Fetch file content
+                print(f"Fetching file: {item['download_url']}")
+                file_content_response = requests.get(item['download_url'], headers=HEADERS)
+                print("Second request done")
+                file_content_response.raise_for_status()
+                file_content = file_content_response.text
+
+                # Split the file content into 500-character chunks
+                text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
+                file_content = clean_text(file_content)
+                chunks = text_splitter.split_text(file_content)
+
+                # Add metadata and chunk number
+                for chunk_no, chunk in enumerate(chunks, start=1):
+                    documents.append({
+                        'file_path': item['path'],
+                        'repo_url': repo_url,
+                        'blob_url': item['html_url'],  # Add GitHub blob URL
+                        'chunk_content': chunk,
+                        'chunk_no': chunk_no
+                    })
+
+                # Insert into database
+                print(f"Processed file: {item['path']} with {len(chunks)} chunks.")
+                print("Sending to Astra...")
+
+            elif item['type'] == 'dir':
+                # Recursively fetch and process directory contents
+                print(f"Processing directory: {item['path']}")
+                documents.extend(fetch_and_chunk(item['url'], repo_url))
+
+    except requests.exceptions.RequestException as req_err:
+        print(f"Request error processing URL {api_url}: {req_err}")
+    except Exception as e:
+        print(f"Error processing URL {api_url}: {e}")
+
+    return documents
+
+
+
+from datetime import datetime, timedelta
+import pytz
+
+def get_ist_time():
+    # Get the current UTC time
+    utc_time = datetime.utcnow()
+    
+    # Convert UTC time to IST
+    ist_timezone = pytz.timezone("Asia/Kolkata")
+    ist_time = utc_time.replace(tzinfo=pytz.utc).astimezone(ist_timezone)
+    
+    # Format IST time in a human-readable format
+    human_readable = ist_time.strftime("%Y-%m-%d %H:%M:%S %Z")
+    return human_readable
+
