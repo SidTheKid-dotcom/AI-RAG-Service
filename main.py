@@ -327,3 +327,77 @@ def get_ist_time():
     human_readable = ist_time.strftime("%Y-%m-%d %H:%M:%S %Z")
     return human_readable
 
+
+def search_and_answer(query,repo_name,structure):
+  """Searches the specified repository's Elasticsearch index for the most relevant files,
+  sends them to the Gemini LLM, and returns the generated answer.
+
+  Args:
+    query: The query string.
+    repo_name: The name of the GitHub repository.
+
+  Returns:
+    The generated answer or an error message.
+  """
+  client = DataAPIClient("-----------------------------------")
+  database = client.get_database("-----------------------------------")
+  collection = database.get_collection(repo_name)
+
+  prompt = f"""You are a helpful code assistant that answers queries based on chunks of documents. Start by greeting the user using the current time as a reference. Here is the current time: {get_ist_time()}.
+
+Greeting should be:
+- "Good morning" if the time is before 12:00 PM
+- "Good afternoon" if the time is between 12:00 PM and 5:00 PM
+- "Good evening" if the time is after 5:00 PM
+
+**Query:**
+{query}
+
+Based on the query (which may include a repository name and file name) and the provided file chunks, please provide a comprehensive and informative answer. Your response should include:
+
+1. **Source Attribution**: Clearly state the source of information using each document name.
+2. **Code Snippets**: Include code snippets wherever applicable to enhance understanding.
+3. **GitHub References**: Mention GitHub sources, including repository names and file names.
+4. **GitHub Links**: Provide a direct link to the relevant GitHub file every link should be clickable in markdown.
+5. **Markdown Format**: Ensure the output is in Markdown format, using headings, lists, and code blocks as needed.
+6. **Conclusion**: Summarize the information in a conclusion.
+7. **Emojis**: Use emojis to make the response more engaging use emojis for document names and output markdown sections appropriately.
+
+**Documents** (These can be from different repositories or the same repository but different files. The name of the file identifies each document):
+- Construct a coherent answer from these.
+- Mention the sources and GitHub blogs as links.
+- Ensure the answer is as detailed and long as possible.
+- Do not hallucinate or mix and match repositories.
+
+Please ensure your response is accurate, detailed, and well-structured."""
+
+
+
+  # Connect to Elasticsearch using appropriate configuration
+  results_ite = collection.find(
+        {},
+        projection={"*": 1},
+        limit=15,
+        sort={"$vectorize": query},)
+  
+
+  query = results_ite.get_sort_vector()
+  for doc in results_ite:
+            print(f"docname/path/src={doc['name']} \ncontent=> {doc['$vectorize']}")
+
+
+            prompt += f"File: {doc['name']}\n"
+            prompt += f"Content: {doc['$vectorize'].strip().replace(' ', '')}\n\n"
+  with open('prompt-code.txt', 'w') as f:
+                f.write(prompt)
+
+
+  # Use a try-except block for error handling with informative message
+  try:
+      model = genai.GenerativeModel("gemini-1.5-flash-8b")
+      response = model.generate_content(prompt)
+      return response.text
+  except Exception as e:
+      print(f"Error generating response: {e}")
+      return "An error occurred while processing your query. Please try again later."
+
