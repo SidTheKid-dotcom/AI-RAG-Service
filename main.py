@@ -87,3 +87,129 @@ def ask_llm(prompt,query):
 
     return response.text
 
+
+def new_code(query):
+        generation_config = {
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "top_k": 40,
+        "max_output_tokens": 1000,
+        "response_schema": content.Schema(
+            type = content.Type.OBJECT,
+            properties = {
+            "file_url": content.Schema(
+                type = content.Type.STRING,
+            ),
+            },
+        ),
+        "response_mime_type": "application/json",
+        }
+
+        model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash-8b",
+        generation_config=generation_config,
+        system_instruction="for the given query and diffrent repos ( structured ) decide which repo and file user is talking about and once decided create the link to file from repo link and file path...return json called {file_url} always give a valid github raw file link choose file wisely if user doesn't provide valid query regarding repo then tell user to be specific and try again.....make the final link in following format https://raw.githubusercontent.com/Mercury-Copilot/Spam-Detect/refs/heads/main/Detect/spam.ipynb instead of https://github.com/Mercury-Copilot/Spam-Detect/blob/main/Detect/spam.ipynb\n",
+        )
+
+        chat_session = model.start_chat(
+        history=[
+            {
+            "role": "model",
+            "parts": [
+                "```json\n{\n  \"file_url\": \"https://raw.githubusercontent.com/Mercury-Copilot/Spam-Detect/refs/heads/main/Detect/spam.ipynb\"\n}\n```",
+            ],
+            },
+        ]
+        )
+        response = requests.get("http://13.127.245.117/api/upload/github")
+        response.raise_for_status()  # Raise an error for bad status codes (4xx or 5xx)
+
+        repos = response.json()  # Parse the JSON response into a list of repositories
+
+        # Create an array of stringified repo details
+        repo_details_array = [
+            json.dumps({
+                "repoUrl": repo["repoUrl"],
+                "repoName": repo["repoName"],
+                "owner": repo["owner"],
+                "description": repo["description"]
+                , "structure":repo["structure"]
+            }) for repo in repos
+        ]
+
+        # print(repo_details_array) 
+        
+        prompt=f"""QUERY={query}\n REPOS ARE (almost all queries are related to these...so predict and return atleast one file url repo for each query)  final link should be of format like (.../refs/heads/..) e.g  https://raw.githubusercontent.com/Mercury-Copilot/Spam-Detect/refs/heads/main/Detect/spam.ipynb=>\n"""
+
+        for repo in repo_details_array:
+            prompt+=repo+"\n"
+        
+
+        response = chat_session.send_message(prompt)
+        python_object = json.loads(json.dumps(response.text))
+        file_url= python_object.split('"')[-2]
+        print(file_url)
+        cleaned_file_content = fetch_and_clean_file(file_url)
+        ans=ask_llm(f"QUERY= {query}\n PROBABLE FILE\nFILE SOURCE: {file_url}\nFILE TEXT:\n {cleaned_file_content}",query)
+        return ans
+
+
+
+
+def index_repo(repo_url):
+    """
+    Indexes a GitHub repository into Elasticsearch, including the blob URL for each file.
+
+    Args:
+        repo_url: The URL of the GitHub repository.
+
+    Returns:
+        None
+    """
+    # Elasticsearch configuration
+    # Extract repository name and create an Elasticsearch index name
+    repo_name = repo_url.split("/")[-1].split(".")[0]
+    index_name = f"{repo_name}_index"
+    
+
+
+    # Construct GitHub API URL for repository contents
+    repo_api_url = f"https://api.github.com/repos/{'/'.join(repo_url.split('/')[-2:])}/contents/"
+
+    # Authorization token for GitHub API
+    github_token = "-----------------------------------"
+    headers = {"Authorization": f"token {github_token}"}
+
+import requests
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+# Constants and configurations
+GITHUB_TOKEN = "-----------------------------------"
+HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
+
+
+def delete_collection_if_exists(database, collection_name):
+    """
+    Safely delete a collection if it exists in the database.
+    
+    Args:
+        database: AstraDB database instance
+        collection_name: Name of the collection to delete
+        
+    Returns:
+        bool: True if collection was deleted, False if it didn't exist
+    """
+    try:
+        # First check if collection exists
+        collection = database.get_collection(collection_name)
+        if collection:
+            database.drop_collection(name_or_collection=collection_name)
+            print(f"Collection '{collection_name}' successfully deleted.")
+            return True
+    except CollectionNotFoundException:
+        print(f"Collection '{collection_name}' does not exist. Nothing to delete.")
+        return False
+    except Exception as e:
+        print(f"An error occurred while trying to delete collection '{collection_name}': {str(e)}")
+        return False
+
