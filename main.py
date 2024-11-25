@@ -401,3 +401,256 @@ Please ensure your response is accurate, detailed, and well-structured."""
       print(f"Error generating response: {e}")
       return "An error occurred while processing your query. Please try again later."
 
+
+@app.post("/index_repo")
+async def index_repo_endpoint(repo_url: str):
+    try:
+        repo_api_url = f"https://api.github.com/repos/{'/'.join(repo_url.split('/')[-2:])}/contents/"
+        documents=fetch_and_chunk(repo_api_url, repo_url)
+        converted_documents = []
+        for doc in documents:
+                    # Create 'name' by concatenating repo_url, blob_url, and chunk_no
+                    name = f"src_url={doc['blob_url']} =>chunk_no={doc['chunk_no']}"
+                    # Create '$vectorize' as a string of the whole document
+                    vectorize = doc['chunk_content']
+                    converted_documents.append({
+                        "name": name,
+                        "$vectorize": clean_text(vectorize) 
+                    })
+
+        # for doc in converted_documents:
+        #     print(doc)
+        repo_name = repo_url.split("/")[-1].split(".")[0].replace("-","_")
+        index_name = f"{repo_name}_index"
+        delete_collection_if_exists(my_database, index_name)
+
+        my_collection = my_database.create_collection(
+    index_name,
+    dimension=1024,
+    metric=VectorMetric.DOT_PRODUCT,
+    service={
+        "provider": "nvidia",
+        "modelName": "NV-Embed-QA"
+    }
+)
+
+
+        collection = database.get_collection(index_name)
+
+        collection.insert_many(converted_documents)
+
+        results_ite = collection.find(
+        {},
+        projection={"*": 1},
+        limit=20,
+        sort={"$vectorize": "TEST QUERY HERE"},)
+
+        return {"message": "Repository indexed successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/search_and_answer")
+async def search_and_answer_endpoint(request: Request):
+    data = await request.json()
+    query = data.get("query")
+    repo = data.get("repo")
+    structure = repo["structure"]
+    url= repo["repoUrl"]
+    repo_name = url.split("/")[-1].split(".")[0].replace("-","_")
+    
+    return {"ans":search_and_answer(query,f"{repo_name}_index",structure) }
+    
+
+    if not query :
+        raise HTTPException(status_code=400, detail="Query and repo_name are required")
+
+    try:
+        answer = search_and_answer(query, )
+        return {"answer": answer}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
+
+from pydantic import BaseModel
+import requests
+from io import BytesIO
+from PyPDF2 import PdfReader
+import docx
+import re
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from urllib.parse import urlparse
+
+
+
+
+# Model to represent the file URL in request
+class FileRequest(BaseModel):
+    file_url: str
+
+# Helper function to extract text from different file formatsimport requests
+import requests
+from io import BytesIO
+from fastapi import HTTPException
+import fitz  # PyMuPDF
+import docx
+import mimetypes
+
+def extract_text_from_file(url: str) -> str:
+    response = requests.get(url)
+    
+    if response.status_code != 200:
+        raise HTTPException(status_code=404, detail="File not found at the provided URL")
+    
+    file_content = BytesIO(response.content)
+    file_content.seek(0)
+    
+    # Determine the file type using mimetypes
+    mime_type, _ = mimetypes.guess_type(url)
+    file_content.seek(0)
+    
+    if mime_type is None:
+        raise HTTPException(status_code=400, detail="Unable to determine file type")
+    
+    if "pdf" in mime_type:
+        # For PDF files
+        try:
+            pdf_document = fitz.open(stream=file_content, filetype="pdf")
+            text = ""
+            for page_num in range(pdf_document.page_count):
+                page = pdf_document.load_page(page_num)
+                text += page.get_text()
+            return text
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error reading PDF file: {str(e)}")
+    
+    elif "msword" in mime_type or "vnd.openxmlformats-officedocument.wordprocessingml.document" in mime_type:
+        # For DOCX files
+        try:
+            doc = docx.Document(file_content)
+            text = ""
+            for para in doc.paragraphs:
+                text += para.text + "\n"
+            return text
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error reading DOCX file: {str(e)}")
+    
+    elif "plain" in mime_type or "text" in mime_type:
+        # For TXT files
+        try:
+            return file_content.read().decode('utf-8')
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error reading text file: {str(e)}")
+    
+    else:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+
+
+
+@app.post("/process-file/")
+async def process_file(request: FileRequest):
+    file_url = request.file_url
+    try:
+        # Extract and clean the text from the file
+        text = extract_text_from_file(file_url)
+        cleaned_text = clean_text(text)
+        
+        # Split the text into chunks using RecursiveCharacterTextSplitter
+        splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
+        chunks = splitter.split_text(cleaned_text)
+        
+        # Prepare the response list
+        result = []
+        for idx, chunk in enumerate(chunks):
+            result.append({
+                "fileurl": file_url,
+                "chunk_content": chunk,
+                "chunk_number": idx + 1
+            })
+
+        formatted_chunks=[]
+        for chunk in result:
+            formatted_chunks.append({
+                "name": f"filename={chunk['fileurl'].split('/')[-1]} src_url={chunk['fileurl']} =>chunk_no={chunk['chunk_number']}",
+                "$vectorize": chunk['chunk_content']
+            })
+        
+        collection = database.docs
+        collection.insert_many(formatted_chunks)   
+     
+        return {"chunks": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/query-document")
+async def query_document(query: str):
+    try:
+       
+        # data = await request.json()
+        query = query
+        prompt = f"""You are a helpful document assistant that answers queries based on chunks of documents. Start by greeting the user using the current time as a reference. Here is the current time: {get_ist_time()}. 
+
+Greeting should be:
+- "Good morning" if the time is before 12:00 PM
+- "Good afternoon" if the time is between 12:00 PM and 5:00 PM
+- "Good evening" if the time is after 5:00 PM
+
+**Question:**
+{query}
+
+Based on the query (which may mention the document name), provide a comprehensive and informative answer using the relevant document chunks. Your response should include:
+
+1. **Source Attribution**: Always mention the source of documents as links.
+2. **Markdown Format**: Ensure the output is in Markdown format.
+3. **Accuracy**: Do not hallucinate; provide a quick rhetorical answer if asked, and then go in-depth with sources.
+4. **Repetition**: Mention the source once for repeating documents.
+5. **Emojis**: Use emojis to enhance the response when appropriate.
+
+**Documents** (These can be from different files):
+- Construct a coherent answer from these.
+- Mention the sources and GitHub blogs as links.
+- Ensure the answer is detailed, accurate, and well-structured.
+- Do not mix and match different repositories.
+
+"""
+
+        # 1. Query Astra DB for the document content based on the user's query
+        client = DataAPIClient("-----------------------------")
+        database = client.get_database("-----------------------------")
+        collection = database.docs
+        
+        results_ite = collection.find(
+        {},
+        projection={"*": 1},
+        limit=10,
+        sort={"$vectorize": query},)
+        
+        query = results_ite.get_sort_vector()
+        for doc in results_ite:
+            print(f"docname/path/src={doc['name']} \ncontent=> {doc['$vectorize']}")
+
+
+            prompt += f"File: {doc['name']}\n"
+            prompt += f"Content: {doc['$vectorize'].strip().replace(' ', '')}\n\n"
+        
+            #write prompt to file
+        with open('prompt-doc.txt', 'w') as f:
+                f.write(prompt)
+
+        try:
+            model = genai.GenerativeModel("gemini-1.5-flash-8b")
+            response = model.generate_content(prompt)
+            return {"answer": response.text}
+        except Exception as e:
+            print(f"Error generating response: {e}")
+            return "An error occurred while processing your query. Please try again later."
+
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    
+
