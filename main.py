@@ -377,7 +377,7 @@ def search_and_answer(query,repo_name,structure):
     The generated answer or an error message.
   """
   client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
-  database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
+  database = client.get_database("https://7016d868-3451-4096-8e1a-bc2b237a58bb-us-east-2.apps.astra.datastax.com")
   collection = database.get_collection(repo_name)
 
   prompt = f"""You are a helpful code assistant that answers queries based on chunks of documents. Start by greeting the user using the current time as a reference. Here is the current time: {get_ist_time()}.
@@ -438,12 +438,14 @@ Please ensure your response is accurate, detailed, and well-structured."""
       print(f"Error generating response: {e}")
       return "An error occurred while processing your query. Please try again later."
 
-database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
+database = client.get_database("https://7016d868-3451-4096-8e1a-bc2b237a58bb-us-east-2.apps.astra.datastax.com")
 
 
 @app.post("/index_repo")
 async def index_repo_endpoint(repo_url: str):
     try:
+        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+        database = client.get_database("https://7016d868-3451-4096-8e1a-bc2b237a58bb-us-east-2.apps.astra.datastax.com")
         repo_api_url = f"https://api.github.com/repos/{'/'.join(repo_url.split('/')[-2:])}/contents/"
         documents=fetch_and_chunk(repo_api_url, repo_url)
         converted_documents = []
