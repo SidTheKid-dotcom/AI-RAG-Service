@@ -51,9 +51,9 @@ def clean_text(text: str) -> str:
 def fetch_and_clean_file(url):
 
     try:
-        GITHUB_TOKEN = "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"
+        GITHUB_TOKEN = "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"
 
-        HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "User-Agent": "nilaytayade"}
+        HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "User-Agent": "SidTheKid-dotcom"}
         response = requests.get(url,headers=HEADERS)
         response.raise_for_status()  # Raise an error for bad status codes (4xx or 5xx)
 
@@ -215,14 +215,14 @@ def index_repo(repo_url):
     repo_api_url = f"https://api.github.com/repos/{'/'.join(repo_url.split('/')[-2:])}/contents/"
 
     # Authorization token for GitHub API
-    github_token = "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"
+    github_token = "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"
     headers = {"Authorization": f"token {github_token}"}
 
 import requests
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Constants and configurations
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = "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"
 HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
 
 
@@ -281,8 +281,8 @@ def fetch_and_chunk(api_url, repo_url):
     Returns:
         list: A list of documents, each representing a chunk with metadata.
     """
-    GITHUB_TOKEN = "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"
-    HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "User-Agent": "nilaytayade"}
+    GITHUB_TOKEN = "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"
+    HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "User-Agent": "SidTheKid-dotcom"}
     documents = []
     code_extensions = {'.py', '.js', '.java', '.cpp', '.c', '.cs', '.go', '.rb', '.php', '.html', '.css', '.ts', '.json', '.xml', '.yml', '.yaml', '.sh', '.bat','md','txt','ipynb'}
 
