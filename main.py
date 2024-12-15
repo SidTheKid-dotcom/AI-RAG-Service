@@ -28,8 +28,8 @@ app.add_middleware(
 gemini_api_key = "AIzaSyD8yjZrZx29L90x9AZkj7ofi1cnZBIdKTc"
 genai.configure(api_key=gemini_api_key)
 from astrapy import DataAPIClient
-client = DataAPIClient("AstraCS:uwQYwgJecSeQrKUyaaLAwElc:e4a1c26f96ca72906f95adc8000be9b144c89d0a4bbfe7303329c34f0ebbddbd")
-database = client.get_database("https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com")
+client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
 
 
 from astrapy.constants import VectorMetric
@@ -91,8 +91,8 @@ def ask_llm(prompt,query):
     history=[
     ]
     )
-    client = DataAPIClient("AstraCS:uwQYwgJecSeQrKUyaaLAwElc:e4a1c26f96ca72906f95adc8000be9b144c89d0a4bbfe7303329c34f0ebbddbd")
-    database = client.get_database("https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com")
+    client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+    database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
     collection = database.test
 
     results_ite = collection.find(
@@ -251,8 +251,8 @@ def delete_collection_if_exists(database, collection_name):
         print(f"An error occurred while trying to delete collection '{collection_name}': {str(e)}")
         return False
 
-ASTRA_DB_APPLICATION_TOKEN = "AstraCS:uwQYwgJecSeQrKUyaaLAwElc:e4a1c26f96ca72906f95adc8000be9b144c89d0a4bbfe7303329c34f0ebbddbd"
-ASTRA_DB_API_ENDPOINT = "https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com"
+ASTRA_DB_APPLICATION_TOKEN = "AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533"
+ASTRA_DB_API_ENDPOINT = "https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com"
 
 
 
@@ -375,8 +375,8 @@ def search_and_answer(query,repo_name,structure):
   Returns:
     The generated answer or an error message.
   """
-  client = DataAPIClient("AstraCS:bCDiuUvmFDtCZhqwLTeBiBaT:e42ed2e1b85d08115817d1770cb201c78eab73ab590d2ddf94c869ae3ab54edb")
-  database = client.get_database("https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com")
+  client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+  database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
   collection = database.get_collection(repo_name)
 
   prompt = f"""You are a helpful code assistant that answers queries based on chunks of documents. Start by greeting the user using the current time as a reference. Here is the current time: {get_ist_time()}.
@@ -437,7 +437,7 @@ Please ensure your response is accurate, detailed, and well-structured."""
       print(f"Error generating response: {e}")
       return "An error occurred while processing your query. Please try again later."
 
-database = client.get_database("https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com")
+database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
 
 
 @app.post("/index_repo")
@@ -615,8 +615,8 @@ async def process_file(request: FileRequest):
                 "$vectorize": chunk['chunk_content']
             })
 
-        client = DataAPIClient("AstraCS:uwQYwgJecSeQrKUyaaLAwElc:e4a1c26f96ca72906f95adc8000be9b144c89d0a4bbfe7303329c34f0ebbddbd")
-        database = client.get_database("https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
 
         
         collection = database.docs
@@ -662,8 +662,8 @@ Based on the query (which may mention the document name), provide a comprehensiv
 """
 
         # 1. Query Astra DB for the document content based on the user's query
-        client = DataAPIClient("AstraCS:uwQYwgJecSeQrKUyaaLAwElc:e4a1c26f96ca72906f95adc8000be9b144c89d0a4bbfe7303329c34f0ebbddbd")
-        database = client.get_database("https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
         collection = database.docs
         
         results_ite = collection.find(
@@ -1343,7 +1343,7 @@ def clean_text(text: str) -> str:
     return text.strip()
 
 
-api_key="fc-e6bfa3cc4c144b888821d5c2376ce74a"
+api_key="fc-c66cf0b2efb347769b69874dc155c2b5"
 
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import FireCrawlLoader
@@ -1433,8 +1433,8 @@ async def scrape_and_store(url: str):
                 "$vectorize": chunk['chunk_content']
             })
 
-        client = DataAPIClient("AstraCS:uwQYwgJecSeQrKUyaaLAwElc:e4a1c26f96ca72906f95adc8000be9b144c89d0a4bbfe7303329c34f0ebbddbd")
-        database = client.get_database("https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
 
         
         collection = database.wiki
@@ -1485,8 +1485,8 @@ Do not mix and match different repositories.
 """
 
         # 1. Query Astra DB for the document content based on the user's query
-        client = DataAPIClient("AstraCS:uwQYwgJecSeQrKUyaaLAwElc:e4a1c26f96ca72906f95adc8000be9b144c89d0a4bbfe7303329c34f0ebbddbd")
-        database = client.get_database("https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
         collection = database.wiki
         
         results_ite = collection.find(
@@ -1562,8 +1562,8 @@ def get_transcript_summary_store(file_path):
         #         "$vectorize": chunk['chunk_content']
         #     })
 
-        client = DataAPIClient("AstraCS:uwQYwgJecSeQrKUyaaLAwElc:e4a1c26f96ca72906f95adc8000be9b144c89d0a4bbfe7303329c34f0ebbddbd")
-        database = client.get_database("https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
 
         
         collection = database.meetings
@@ -1616,8 +1616,8 @@ Meeting Transcript In Vector DB Retrived wrt to user query: \n
 """
 
         # 1. Query Astra DB for the document content based on the user's query
-        client = DataAPIClient("AstraCS:uwQYwgJecSeQrKUyaaLAwElc:e4a1c26f96ca72906f95adc8000be9b144c89d0a4bbfe7303329c34f0ebbddbd")
-        database = client.get_database("https://f6af1d4d-637c-4387-a364-3cfa0f1a648c-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
         collection = database.meetings
         
         results_ite = collection.find(
