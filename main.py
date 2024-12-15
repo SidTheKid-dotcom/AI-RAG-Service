@@ -376,7 +376,7 @@ def search_and_answer(query,repo_name,structure):
   Returns:
     The generated answer or an error message.
   """
-  client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+  client = DataAPIClient("AstraCS:ruhvOkKmpcGLbKqlWIeocMCG:101a48b275f476cea8adb20dd278075bcd28943f63d0fbc7849c9dfcb4bdeafe")
   database = client.get_database("https://7016d868-3451-4096-8e1a-bc2b237a58bb-us-east-2.apps.astra.datastax.com")
   collection = database.get_collection(repo_name)
 
@@ -444,7 +444,7 @@ database = client.get_database("https://7016d868-3451-4096-8e1a-bc2b237a58bb-us-
 @app.post("/index_repo")
 async def index_repo_endpoint(repo_url: str):
     try:
-        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
+        client = DataAPIClient("AstraCS:ruhvOkKmpcGLbKqlWIeocMCG:101a48b275f476cea8adb20dd278075bcd28943f63d0fbc7849c9dfcb4bdeafe")
         database = client.get_database("https://7016d868-3451-4096-8e1a-bc2b237a58bb-us-east-2.apps.astra.datastax.com")
         repo_api_url = f"https://api.github.com/repos/{'/'.join(repo_url.split('/')[-2:])}/contents/"
         documents=fetch_and_chunk(repo_api_url, repo_url)
