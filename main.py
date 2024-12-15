@@ -492,7 +492,7 @@ async def search_and_answer_endpoint(request: Request):
     try:
         data = await request.json()
     except Exception as e:
-        return JSONResponse(content={"error": "Invalid JSON format", "details": str(e)}, status_code=400)
+        return JSONResponse(content={"error": "Invalid JSON format"}, status_code=400)
     query = data.get("query")
     repo = data.get("repo")
     structure = repo["structure"]
