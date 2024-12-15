@@ -489,7 +489,10 @@ async def index_repo_endpoint(repo_url: str):
 
 @app.post("/search_and_answer")
 async def search_and_answer_endpoint(request: Request):
-    data = await request.json()
+    try:
+        data = await request.json()
+    except Exception as e:
+        return JSONResponse(content={"error": "Invalid JSON format", "details": str(e)}, status_code=400)
     query = data.get("query")
     repo = data.get("repo")
     structure = repo["structure"]
