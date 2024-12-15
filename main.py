@@ -282,12 +282,12 @@ def fetch_and_chunk(api_url, repo_url):
         list: A list of documents, each representing a chunk with metadata.
     """
     GITHUB_TOKEN = "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"
-    HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "User-Agent": "SidTheKid-dotcom"}
+    HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
     documents = []
     code_extensions = {'.py', '.js', '.java', '.cpp', '.c', '.cs', '.go', '.rb', '.php', '.html', '.css', '.ts', '.json', '.xml', '.yml', '.yaml', '.sh', '.bat','md','txt','ipynb'}
 
     try:
-        response = requests.get(api_url) #headers=HEADERS
+        response = requests.get(api_url,headers=HEADERS) #
         print("First request done")
         response.raise_for_status()
         items = response.json()
@@ -310,7 +310,7 @@ def fetch_and_chunk(api_url, repo_url):
 
                 # Fetch file content
                 print(f"Fetching file: {item['download_url']}")
-                file_content_response = requests.get(item['download_url']) #headers=HEADERS
+                file_content_response = requests.get(item['download_url'],headers=HEADERS) #
                 print("Second request done")
                 file_content_response.raise_for_status()
                 file_content = file_content_response.text
