@@ -307,6 +307,7 @@ def fetch_and_chunk(api_url, repo_url):
                 if not any(item['path'].endswith(ext) for ext in code_extensions):
                     print(f"Ignoring non-code file: {item['path']}")
                     continue
+                HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
 
                 # Fetch file content
                 print(f"Fetching file: {item['download_url']}")
