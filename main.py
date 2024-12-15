@@ -311,7 +311,7 @@ def fetch_and_chunk(api_url, repo_url):
 
                 # Fetch file content
                 print(f"Fetching file: {item['download_url']}")
-                file_content_response = requests.get(item['download_url'],headers=HEADERS) #
+                file_content_response = requests.get(item['download_url']) #
                 print("Second request done")
                 file_content_response.raise_for_status()
                 file_content = file_content_response.text
