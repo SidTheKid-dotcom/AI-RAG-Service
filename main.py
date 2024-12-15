@@ -281,7 +281,7 @@ def fetch_and_chunk(api_url, repo_url):
     Returns:
         list: A list of documents, each representing a chunk with metadata.
     """
-    GITHUB_TOKEN = "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"
+    GITHUB_TOKEN = "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"
     HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
     documents = []
     code_extensions = {'.py', '.js', '.java', '.cpp', '.c', '.cs', '.go', '.rb', '.php', '.html', '.css', '.ts', '.json', '.xml', '.yml', '.yaml', '.sh', '.bat','md','txt','ipynb'}
