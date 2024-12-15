@@ -287,7 +287,7 @@ def fetch_and_chunk(api_url, repo_url):
     code_extensions = {'.py', '.js', '.java', '.cpp', '.c', '.cs', '.go', '.rb', '.php', '.html', '.css', '.ts', '.json', '.xml', '.yml', '.yaml', '.sh', '.bat','md','txt','ipynb'}
 
     try:
-        response = requests.get(api_url,headers=HEADERS) #
+        response = requests.get(api_url) #
         print("First request done")
         response.raise_for_status()
         items = response.json()
