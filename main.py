@@ -853,7 +853,7 @@ def start_etl(csv_url, table_name, db_params):
 
 # Database connection parameters
 db_params = {
-    'host': 'iitb.clk2846ssidu.ap-south-1.rds.amazonaws.com',
+    'host': 'database-iitb-csv.ctcmokaq23xn.ap-south-1.rds.amazonaws.com',
     'port': '5432',
     'database': 'test_db',  
     'user': 'postgres',
@@ -914,7 +914,7 @@ def query_postgres(
     # Default database parameters if none provided
     if db_params is None:
         db_params = {
-            'host': 'iitb.clk2846ssidu.ap-south-1.rds.amazonaws.com',
+            'host': 'database-iitb-csv.ctcmokaq23xn.ap-south-1.rds.amazonaws.com',
             'port': '5432',
             'database': 'test_db',
             'user': 'postgres',
@@ -1035,7 +1035,7 @@ def get_single_row(query: str, params: tuple = None, db_params: Dict = None) -> 
     # Default database parameters
     if db_params is None:
         db_params = {
-            'host': 'iitb.clk2846ssidu.ap-south-1.rds.amazonaws.com',
+            'host': 'database-iitb-csv.ctcmokaq23xn.ap-south-1.rds.amazonaws.com',
             'port': '5432',
             'database': 'test_db',
             'user': 'postgres',
