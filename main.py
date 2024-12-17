@@ -25,7 +25,7 @@ app.add_middleware(
 )
 
 
-gemini_api_key = "AIzaSyD8yjZrZx29L90x9AZkj7ofi1cnZBIdKTc"
+gemini_api_key = "AIzaSyDQW47y81ibWXN8dNFwrrl-AP1NV50bjes"
 genai.configure(api_key=gemini_api_key)
 from astrapy import DataAPIClient
 client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
@@ -1082,7 +1082,7 @@ def get_query (query,structure ):
     import google.generativeai as genai
     from google.ai.generativelanguage_v1beta.types import content
 
-    genai.configure(api_key="AIzaSyD8yjZrZx29L90x9AZkj7ofi1cnZBIdKTc")
+    genai.configure(api_key="AIzaSyDQW47y81ibWXN8dNFwrrl-AP1NV50bjes")
 
     # Create the model
     generation_config = {
@@ -1169,7 +1169,7 @@ def get_query_visualize (query,structure ):
     $ pip install google.ai.generativelanguage
     """
 
-    genai.configure(api_key="AIzaSyD8yjZrZx29L90x9AZkj7ofi1cnZBIdKTc")
+    genai.configure(api_key="AIzaSyDQW47y81ibWXN8dNFwrrl-AP1NV50bjes")
 
     # Create the model
     generation_config = {
@@ -1248,7 +1248,7 @@ def convert_string_to_dict(string):
 
 
 def get_graph_data (query,data):
-    genai.configure(api_key="AIzaSyD8yjZrZx29L90x9AZkj7ofi1cnZBIdKTc")
+    genai.configure(api_key="AIzaSyDQW47y81ibWXN8dNFwrrl-AP1NV50bjes")
 
     # Create the model
     generation_config = {
@@ -1525,7 +1525,7 @@ Do not mix and match different repositories.
 
 
 import google.generativeai as genai
-gemini_api_key = "AIzaSyD8yjZrZx29L90x9AZkj7ofi1cnZBIdKTc"
+gemini_api_key = "AIzaSyDQW47y81ibWXN8dNFwrrl-AP1NV50bjes"
 genai.configure(api_key=gemini_api_key)
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
