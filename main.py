@@ -295,7 +295,7 @@ def fetch_and_chunk(api_url, repo_url):
     Returns:
         list: A list of documents, each representing a chunk with metadata.
     """
-    GITHUB_TOKEN = "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"
+    GITHUB_TOKEN = GITHUB_TOKEN_KEY
     HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "User-Agent": "nilaytayade"}
     documents = []
     code_extensions = {'.py', '.js', '.java', '.cpp', '.c', '.cs', '.go', '.rb', '.php', '.html', '.css', '.ts', '.json', '.xml', '.yml', '.yaml', '.sh', '.bat','md','txt','ipynb'}
@@ -523,7 +523,7 @@ async def search_and_answer_endpoint(request: Request):
         raise HTTPException(status_code=400, detail="Query and repo_name are required")
 
     try:
-        answer = search_and_answer(query, )
+        answer = search_and_answer(query, repo, structure)
         return {"answer": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -654,7 +654,6 @@ async def query_document(query: str):
     try:
        
         # data = await request.json()
-        query = query
         prompt = f"""You are a helpful document assistant that answers queries based on chunks of documents. Start by greeting the user using the current time as a reference. Here is the current time: {get_ist_time()}. 
 
 Greeting should be:
