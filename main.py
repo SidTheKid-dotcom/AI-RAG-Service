@@ -4,6 +4,10 @@ import google.generativeai as genai
 from fastapi.middleware.cors import CORSMiddleware
 import astrapy
 from astrapy.exceptions import CollectionNotFoundException
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
 app = FastAPI()
@@ -15,6 +19,8 @@ origins = [
 ]
 
 
+
+
 # Add CORSMiddleware to the app
 app.add_middleware(
     CORSMiddleware,
@@ -24,12 +30,20 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+GEMINI_API_KEY=os.getenv("GEMINI_API_KEY")
+ASTRA_CLIENT_KEY=os.getenv("ASTRA_CLIENT_KEY")
+GITHUB_TOKEN_KEY=os.getenv("GITHUB_TOKEN_KEY")
+SERVER_IP=os.getenv("SERVER_IP")
+ASTRA_CLIENT_KEY_2=os.getenv("ASTRA_CLIENT_KEY_2")
+ASTRA_DB_KEY=os.getenv("ASTRA_DB_KEY")
+ASTRA_DB_KEY_2=os.getenv("ASTRA_DB_KEY_2")
 
-gemini_api_key = "AIzaSyDQW47y81ibWXN8dNFwrrl-AP1NV50bjes"
+
+gemini_api_key = GEMINI_API_KEY
 genai.configure(api_key=gemini_api_key)
 from astrapy import DataAPIClient
-client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
-database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
+client = DataAPIClient(ASTRA_CLIENT_KEY)
+database = client.get_database(ASTRA_DB_KEY)
 
 
 from astrapy.constants import VectorMetric
@@ -51,7 +65,7 @@ def clean_text(text: str) -> str:
 def fetch_and_clean_file(url):
 
     try:
-        GITHUB_TOKEN = "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"
+        GITHUB_TOKEN = GITHUB_TOKEN_KEY
 
         HEADERS = {"Authorization": f"token {GITHUB_TOKEN}", "User-Agent": "SidTheKid-dotcom"}
         response = requests.get(url,headers=HEADERS)
@@ -91,8 +105,8 @@ def ask_llm(prompt,query):
     history=[
     ]
     )
-    client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
-    database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
+    client = DataAPIClient(ASTRA_CLIENT_KEY)
+    database = client.get_database(ASTRA_DB_KEY)
     collection = database.test
 
     results_ite = collection.find(
@@ -159,7 +173,7 @@ def new_code(query):
             },
         ]
         )
-        response = requests.get("http://13.127.245.117/api/upload/github")
+        response = requests.get("http://{SERVER_IP}/api/upload/github")
         response.raise_for_status()  # Raise an error for bad status codes (4xx or 5xx)
 
         repos = response.json()  # Parse the JSON response into a list of repositories
@@ -215,14 +229,14 @@ def index_repo(repo_url):
     repo_api_url = f"https://api.github.com/repos/{'/'.join(repo_url.split('/')[-2:])}/contents/"
 
     # Authorization token for GitHub API
-    github_token = "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"
+    github_token = GITHUB_TOKEN_KEY
     headers = {"Authorization": f"token {github_token}"}
 
 import requests
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Constants and configurations
-GITHUB_TOKEN = "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"
+GITHUB_TOKEN = GITHUB_TOKEN_KEY
 HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
 
 
@@ -251,8 +265,8 @@ def delete_collection_if_exists(database, collection_name):
         print(f"An error occurred while trying to delete collection '{collection_name}': {str(e)}")
         return False
 
-ASTRA_DB_APPLICATION_TOKEN = "AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533"
-ASTRA_DB_API_ENDPOINT = "https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com"
+ASTRA_DB_APPLICATION_TOKEN = ASTRA_CLIENT_KEY
+ASTRA_DB_API_ENDPOINT = ASTRA_DB_KEY
 
 
 
@@ -376,8 +390,8 @@ def search_and_answer(query,repo_name,structure):
   Returns:
     The generated answer or an error message.
   """
-  client = DataAPIClient("AstraCS:ruhvOkKmpcGLbKqlWIeocMCG:101a48b275f476cea8adb20dd278075bcd28943f63d0fbc7849c9dfcb4bdeafe")
-  database = client.get_database("https://7016d868-3451-4096-8e1a-bc2b237a58bb-us-east-2.apps.astra.datastax.com")
+  client = DataAPIClient(ASTRA_CLIENT_KEY_2)
+  database = client.get_database(ASTRA_DB_KEY_2)
   collection = database.get_collection(repo_name)
 
   prompt = f"""You are a helpful code assistant that answers queries based on chunks of documents. Start by greeting the user using the current time as a reference. Here is the current time: {get_ist_time()}.
@@ -438,14 +452,14 @@ Please ensure your response is accurate, detailed, and well-structured."""
       print(f"Error generating response: {e}")
       return "An error occurred while processing your query. Please try again later."
 
-database = client.get_database("https://7016d868-3451-4096-8e1a-bc2b237a58bb-us-east-2.apps.astra.datastax.com")
+database = client.get_database(ASTRA_DB_KEY_2)
 
 
 @app.post("/index_repo")
 async def index_repo_endpoint(repo_url: str):
     try:
-        client = DataAPIClient("AstraCS:ruhvOkKmpcGLbKqlWIeocMCG:101a48b275f476cea8adb20dd278075bcd28943f63d0fbc7849c9dfcb4bdeafe")
-        database = client.get_database("https://7016d868-3451-4096-8e1a-bc2b237a58bb-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient(ASTRA_CLIENT_KEY_2)
+        database = client.get_database(ASTRA_DB_KEY_2)
         repo_api_url = f"https://api.github.com/repos/{'/'.join(repo_url.split('/')[-2:])}/contents/"
         documents=fetch_and_chunk(repo_api_url, repo_url)
         converted_documents = []
@@ -621,8 +635,8 @@ async def process_file(request: FileRequest):
                 "$vectorize": chunk['chunk_content']
             })
 
-        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
-        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient(ASTRA_CLIENT_KEY)
+        database = client.get_database(ASTRA_DB_KEY)
 
         
         collection = database.docs
@@ -668,8 +682,8 @@ Based on the query (which may mention the document name), provide a comprehensiv
 """
 
         # 1. Query Astra DB for the document content based on the user's query
-        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
-        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient(ASTRA_CLIENT_KEY)
+        database = client.get_database(ASTRA_DB_KEY)
         collection = database.docs
         
         results_ite = collection.find(
@@ -1082,7 +1096,7 @@ def get_query (query,structure ):
     import google.generativeai as genai
     from google.ai.generativelanguage_v1beta.types import content
 
-    genai.configure(api_key="AIzaSyDQW47y81ibWXN8dNFwrrl-AP1NV50bjes")
+    genai.configure(api_key=GEMINI_API_KEY)
 
     # Create the model
     generation_config = {
@@ -1169,7 +1183,7 @@ def get_query_visualize (query,structure ):
     $ pip install google.ai.generativelanguage
     """
 
-    genai.configure(api_key="AIzaSyDQW47y81ibWXN8dNFwrrl-AP1NV50bjes")
+    genai.configure(api_key=GEMINI_API_KEY)
 
     # Create the model
     generation_config = {
@@ -1248,7 +1262,7 @@ def convert_string_to_dict(string):
 
 
 def get_graph_data (query,data):
-    genai.configure(api_key="AIzaSyDQW47y81ibWXN8dNFwrrl-AP1NV50bjes")
+    genai.configure(api_key=GEMINI_API_KEY)
 
     # Create the model
     generation_config = {
@@ -1439,8 +1453,8 @@ async def scrape_and_store(url: str):
                 "$vectorize": chunk['chunk_content']
             })
 
-        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
-        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient(ASTRA_CLIENT_KEY)
+        database = client.get_database(ASTRA_DB_KEY)
 
         
         collection = database.wiki
@@ -1491,8 +1505,8 @@ Do not mix and match different repositories.
 """
 
         # 1. Query Astra DB for the document content based on the user's query
-        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
-        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient(ASTRA_CLIENT_KEY)
+        database = client.get_database(ASTRA_DB_KEY)
         collection = database.wiki
         
         results_ite = collection.find(
@@ -1525,7 +1539,7 @@ Do not mix and match different repositories.
 
 
 import google.generativeai as genai
-gemini_api_key = "AIzaSyDQW47y81ibWXN8dNFwrrl-AP1NV50bjes"
+gemini_api_key = GEMINI_API_KEY
 genai.configure(api_key=gemini_api_key)
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
@@ -1568,8 +1582,8 @@ def get_transcript_summary_store(file_path):
         #         "$vectorize": chunk['chunk_content']
         #     })
 
-        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
-        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient(ASTRA_CLIENT_KEY)
+        database = client.get_database(ASTRA_DB_KEY)
 
         
         collection = database.meetings
@@ -1622,8 +1636,8 @@ Meeting Transcript In Vector DB Retrived wrt to user query: \n
 """
 
         # 1. Query Astra DB for the document content based on the user's query
-        client = DataAPIClient("AstraCS:ZuAaoZrOQjHDBEIoQTpFGDzZ:2a45ed1b058aef015c652b68d88adb201838c52c05a3c000586e10746cce1533")
-        database = client.get_database("https://fec84a84-0a9a-45df-8c4a-d39da233e4d6-us-east-2.apps.astra.datastax.com")
+        client = DataAPIClient(ASTRA_CLIENT_KEY)
+        database = client.get_database(ASTRA_DB_KEY)
         collection = database.meetings
         
         results_ite = collection.find(
